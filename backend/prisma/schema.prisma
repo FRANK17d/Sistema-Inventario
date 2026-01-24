@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Categorías de productos
+model Categoria {
+  id          Int        @id @default(autoincrement())
+  nombre      String     @unique
+  descripcion String?
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  productos   Producto[]
+}
+
+// Productos del inventario
+model Producto {
+  id           Int          @id @default(autoincrement())
+  codigo       String       @unique
+  nombre       String
+  descripcion  String?
+  precio       Decimal      @db.Decimal(10, 2)
+  costo        Decimal      @db.Decimal(10, 2)
+  stock        Int          @default(0)
+  stockMinimo  Int          @default(5)
+  categoriaId  Int
+  categoria    Categoria    @relation(fields: [categoriaId], references: [id])
+  proveedorId  Int?
+  proveedor    Proveedor?   @relation(fields: [proveedorId], references: [id])
+  activo       Boolean      @default(true)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  movimientos  Movimiento[]
+}
+
+// Proveedores
+model Proveedor {
+  id        Int        @id @default(autoincrement())
+  nombre    String
+  contacto  String?
+  telefono  String?
+  email     String?
+  direccion String?
+  activo    Boolean    @default(true)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  productos Producto[]
+}
+
+// Movimientos de inventario (entradas y salidas)
+model Movimiento {
+  id          Int             @id @default(autoincrement())
+  tipo        TipoMovimiento
+  cantidad    Int
+  productoId  Int
+  producto    Producto        @relation(fields: [productoId], references: [id])
+  descripcion String?
+  createdAt   DateTime        @default(now())
+}
+
+enum TipoMovimiento {
+  ENTRADA
+  SALIDA
+  AJUSTE
+}
