@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3030/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 // Types based on backend Prisma schema
 export interface Categoria {
