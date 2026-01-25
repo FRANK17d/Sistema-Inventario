@@ -74,6 +74,20 @@ model Movimiento {
   @@index([createdAt])
 }
 
+// Historial diario para gráficos
+model Historial {
+  id             Int      @id @default(autoincrement())
+  fecha          DateTime @unique @default(now()) @db.Date // Solo fecha sin hora importante
+  totalProductos Int
+  stockBajo      Int
+  valorizacion   Decimal  @db.Decimal(10, 2)
+  valorVenta     Decimal  @db.Decimal(10, 2)
+  rentabilidad   Decimal  @db.Decimal(10, 2)
+  createdAt      DateTime @default(now())
+
+  @@index([fecha])
+}
+
 enum TipoMovimiento {
   ENTRADA
   SALIDA

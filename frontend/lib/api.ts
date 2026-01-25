@@ -58,6 +58,16 @@ export interface Movimiento {
     };
 }
 
+export interface Historial {
+    id: number;
+    fecha: string;
+    totalProductos: number;
+    stockBajo: number;
+    valorizacion: string;
+    valorVenta: string;
+    rentabilidad: string;
+}
+
 export interface DashboardData {
     resumen: {
         totalProductos: number;
@@ -85,6 +95,7 @@ export interface DashboardData {
         imagenUrl?: string;
         _count: { productos: number };
     }>;
+    historial?: Historial[];
 }
 
 // Input types for create/update

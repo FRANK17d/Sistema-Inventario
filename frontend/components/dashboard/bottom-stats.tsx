@@ -137,6 +137,21 @@ export function BottomStats() {
   const valorizacion = data?.resumen.valorizacionInventario || 0
   const valorVenta = data?.resumen.valorVentaPotencial || 0
 
+  // Preparar datos históricos (o usar default si no hay historial suficiente)
+  const historial = data?.historial || []
+
+  const chartDataStock = historial.length > 0
+    ? historial.map(h => ({ value: h.stockBajo }))
+    : defaultChartData
+
+  const chartDataValor = historial.length > 0
+    ? historial.map(h => ({ value: parseFloat(h.valorizacion) }))
+    : defaultChartData
+
+  const chartDataRent = historial.length > 0
+    ? historial.map(h => ({ value: parseFloat(h.rentabilidad) }))
+    : defaultChartData
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 mt-4 md:mt-6">
       <BottomStatCard
@@ -145,7 +160,7 @@ export function BottomStats() {
         current={stockBajo}
         total={totalProductos}
         icon={<AlertTriangle className="h-5 w-5 md:h-6 md:w-6 text-orange-500" />}
-        data={defaultChartData}
+        data={chartDataStock}
         color="#f97316"
         gradientId="colorStock"
         colorClass="bg-orange-500"
@@ -157,7 +172,7 @@ export function BottomStats() {
         current={valorizacion}
         total={0}
         icon={<TrendingUp className="h-5 w-5 md:h-6 md:w-6 text-blue-500" />}
-        data={defaultChartData}
+        data={chartDataValor}
         color="#3b82f6"
         gradientId="colorVal"
         colorClass="bg-blue-500"
@@ -169,7 +184,7 @@ export function BottomStats() {
         current={Math.round(((valorVenta - valorizacion) / valorizacion) * 100) || 0}
         total={100}
         icon={<ClipboardList className="h-5 w-5 md:h-6 md:w-6 text-green-500" />}
-        data={defaultChartData}
+        data={chartDataRent}
         color="#22c55e"
         gradientId="colorRent"
         colorClass="bg-green-500"

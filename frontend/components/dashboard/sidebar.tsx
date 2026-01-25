@@ -35,10 +35,10 @@ export function Sidebar({ onClose }: SidebarProps) {
       {/* Logo */}
       <div className="flex items-center justify-between px-5 py-5 border-b border-sidebar-border">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary text-primary-foreground font-bold text-sm">
-            I
+          <div className="flex items-center justify-center w-8 h-8">
+            <img src="/abasto-logo.svg" alt="Abasto Logo" className="w-full h-full object-contain" />
           </div>
-          <span className="font-bold text-base text-sidebar-foreground">INVENTARIO</span>
+          <span className="font-bold text-base text-sidebar-foreground">ABASTO</span>
         </div>
         <Button
           variant="ghost"
