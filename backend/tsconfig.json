@@ -15,12 +15,10 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "src/**/*",
-    "generated/**/*",
-    "prisma.config.ts"
+    "src/**/*"
   ],
   "exclude": [
     "node_modules",
     "dist"
-  ]
+]
 }
