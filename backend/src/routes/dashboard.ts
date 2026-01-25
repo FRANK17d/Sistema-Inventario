@@ -79,8 +79,8 @@ router.get("/", async (req, res) => {
     ]);
 
     // Calcular totales en memoria (mucho más rápido con payload reducido)
-    const valorizacion = resumenFinanciero.reduce((acc, p) => acc + (p.stock * Number(p.costo)), 0);
-    const valorVenta = resumenFinanciero.reduce((acc, p) => acc + (p.stock * Number(p.precio)), 0);
+    const valorizacion = resumenFinanciero.reduce((acc: number, p: { stock: number, costo: any }) => acc + (p.stock * Number(p.costo)), 0);
+    const valorVenta = resumenFinanciero.reduce((acc: number, p: { stock: number, precio: any }) => acc + (p.stock * Number(p.precio)), 0);
 
     // Contar total de stock bajo sin traer todos los registros
     // Nota: Esto es una query adicional rápida

@@ -32,7 +32,7 @@ router.get("/", async (req, res) => {
 
         // Filtrar productos con stock bajo
         if (stockBajo === "true") {
-            productos = productos.filter(p => p.stock <= p.stockMinimo);
+            productos = productos.filter((p: any) => p.stock <= p.stockMinimo);
         }
 
         res.json(productos);
