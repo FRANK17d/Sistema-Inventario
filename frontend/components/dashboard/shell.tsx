@@ -17,7 +17,7 @@ export function Shell({ children }: ShellProps) {
             {/* Mobile Sidebar Overlay */}
             {sidebarOpen && (
                 <div
-                    className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden"
+                    className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm lg:hidden cursor-pointer"
                     onClick={() => setSidebarOpen(false)}
                 />
             )}
