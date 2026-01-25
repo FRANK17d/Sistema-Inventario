@@ -135,13 +135,31 @@ export interface MovimientoInput {
     descripcion?: string;
 }
 
+// ==================== AUTH ====================
+export interface User {
+    id: number;
+    nombre: string;
+    email: string;
+    rol: "ADMIN" | "ALMACENERO";
+}
+
+export interface LoginResponse {
+    token: string;
+    usuario: User;
+}
+
+export interface LoginCredentials {
+    email: string;
+    password: string;
+}
+
 // API Functions
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
         headers: {
             'Content-Type': 'application/json',
-            ...options?.headers,
+            ...(options?.headers),
         },
     });
 
@@ -151,6 +169,21 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
     }
 
     return res.json();
+}
+
+export async function login(credentials: LoginCredentials): Promise<LoginResponse> {
+    return fetchApi<LoginResponse>('/auth/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+    });
+}
+
+export async function verifyAuth(token: string): Promise<{ message: string }> {
+    return fetchApi<{ message: string }>('/auth/me', {
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
+    });
 }
 
 // Dashboard

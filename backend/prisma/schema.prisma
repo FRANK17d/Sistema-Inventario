@@ -93,3 +93,19 @@ enum TipoMovimiento {
   SALIDA
   AJUSTE
 }
+
+// Usuarios del sistema
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nombre    String
+  email     String   @unique
+  password  String
+  rol       Rol      @default(ALMACENERO)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Rol {
+  ADMIN
+  ALMACENERO
+}

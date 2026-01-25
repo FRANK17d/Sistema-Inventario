@@ -9,6 +9,7 @@ import productosRouter from "./routes/productos.js";
 import movimientosRouter from "./routes/movimientos.js";
 import dashboardRouter from "./routes/dashboard.js";
 import uploadRouter from "./routes/upload.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 const PORT = process.env.PORT;
@@ -17,7 +18,8 @@ const PORT = process.env.PORT;
 app.use(cors());
 app.use(express.json());
 
-// API Routes
+// Rutas
+app.use("/api/auth", authRouter);
 app.use("/api/categorias", categoriasRouter);
 app.use("/api/proveedores", proveedoresRouter);
 app.use("/api/productos", productosRouter);

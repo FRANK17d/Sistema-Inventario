@@ -24,22 +24,19 @@ export class DashboardService {
             prisma.proveedor.count({ where: { activo: true } }),
 
             // 4. Productos con stock bajo (Top 10 para UI)
-            prisma.producto.findMany({
-                where: {
-                    activo: true,
-                    stock: { lte: prisma.producto.fields.stockMinimo }
-                },
-                select: {
-                    id: true,
-                    codigo: true,
-                    nombre: true,
-                    stock: true,
-                    stockMinimo: true,
-                    categoria: { select: { nombre: true } }
-                },
-                orderBy: { stock: "asc" },
-                take: 10
-            }),
+            // 4. Productos con stock bajo (Optimized with Raw Query for explicit field comparison)
+            prisma.$queryRaw<{ id: number; codigo: string; nombre: string; stock: number; stockMinimo: number; categoriaNombre: string }[]>`
+                SELECT p.id, p.codigo, p.nombre, p.stock, p."stockMinimo", c.nombre as "categoriaNombre"
+                FROM "Producto" p
+                JOIN "Categoria" c ON p."categoriaId" = c.id
+                WHERE p.activo = true AND p.stock <= p."stockMinimo"
+                ORDER BY p.stock ASC
+                LIMIT 10
+            `.then(results => results.map(r => ({
+                ...r,
+                // Map to match expected frontend structure if needed, or adjust
+                categoria: { nombre: r.categoriaNombre }
+            }))),
 
             // 5. Últimos movimientos
             prisma.movimiento.findMany({
