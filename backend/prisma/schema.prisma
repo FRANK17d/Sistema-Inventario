@@ -12,6 +12,7 @@ model Categoria {
   id          Int        @id @default(autoincrement())
   nombre      String     @unique
   descripcion String?
+  imagenUrl   String? // URL de la imagen en Cloudinary
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   productos   Producto[]
@@ -19,22 +20,28 @@ model Categoria {
 
 // Productos del inventario
 model Producto {
-  id           Int          @id @default(autoincrement())
-  codigo       String       @unique
-  nombre       String
-  descripcion  String?
-  precio       Decimal      @db.Decimal(10, 2)
-  costo        Decimal      @db.Decimal(10, 2)
-  stock        Int          @default(0)
-  stockMinimo  Int          @default(5)
-  categoriaId  Int
-  categoria    Categoria    @relation(fields: [categoriaId], references: [id])
-  proveedorId  Int?
-  proveedor    Proveedor?   @relation(fields: [proveedorId], references: [id])
-  activo       Boolean      @default(true)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
-  movimientos  Movimiento[]
+  id          Int          @id @default(autoincrement())
+  codigo      String       @unique
+  nombre      String
+  descripcion String?
+  precio      Decimal      @db.Decimal(10, 2)
+  costo       Decimal      @db.Decimal(10, 2)
+  stock       Int          @default(0)
+  stockMinimo Int          @default(5)
+  categoriaId Int
+  categoria   Categoria    @relation(fields: [categoriaId], references: [id])
+  proveedorId Int?
+  proveedor   Proveedor?   @relation(fields: [proveedorId], references: [id])
+  imagenUrl   String? // URL de la imagen en Cloudinary
+  activo      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  movimientos Movimiento[]
+
+  @@index([categoriaId])
+  @@index([proveedorId])
+  @@index([activo])
+  @@index([stock]) // Para filtrar stock bajo rápidamente
 }
 
 // Proveedores
@@ -49,17 +56,23 @@ model Proveedor {
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
   productos Producto[]
+
+  @@index([activo])
 }
 
 // Movimientos de inventario (entradas y salidas)
 model Movimiento {
-  id          Int             @id @default(autoincrement())
+  id          Int            @id @default(autoincrement())
   tipo        TipoMovimiento
   cantidad    Int
   productoId  Int
-  producto    Producto        @relation(fields: [productoId], references: [id])
+  producto    Producto       @relation(fields: [productoId], references: [id])
   descripcion String?
-  createdAt   DateTime        @default(now())
+  createdAt   DateTime       @default(now())
+
+  @@index([productoId])
+  @@index([tipo])
+  @@index([createdAt])
 }
 
 enum TipoMovimiento {

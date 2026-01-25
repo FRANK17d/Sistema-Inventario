@@ -7,99 +7,102 @@ const router = Router();
 router.get("/", async (req, res) => {
   try {
     // Total de productos
-    const totalProductos = await prisma.producto.count({
-      where: { activo: true }
-    });
-    
-    // Total de categorías
-    const totalCategorias = await prisma.categoria.count();
-    
-    // Total de proveedores
-    const totalProveedores = await prisma.proveedor.count({
-      where: { activo: true }
-    });
-    
-    // Productos con stock bajo
-    const productosStockBajo = await prisma.producto.findMany({
+    const [
+      totalProductos,
+      totalCategorias,
+      totalProveedores,
+      productosConStockBajoDB,
+      resumenFinanciero,
+      ultimosMovimientos,
+      productosPorCategoria
+    ] = await Promise.all([
+      // 1. Total productos activos
+      prisma.producto.count({ where: { activo: true } }),
+
+      // 2. Total categorías
+      prisma.categoria.count(),
+
+      // 3. Total proveedores activos
+      prisma.proveedor.count({ where: { activo: true } }),
+
+      // 4. Productos con stock bajo (limitado a 10 para la alerta)
+      prisma.producto.findMany({
+        where: {
+          activo: true,
+          stock: { lte: prisma.producto.fields.stockMinimo }
+        },
+        select: {
+          id: true,
+          codigo: true,
+          nombre: true,
+          stock: true,
+          stockMinimo: true,
+          categoria: { select: { nombre: true } }
+        },
+        orderBy: { stock: "asc" },
+        take: 10 // Optimización: solo traer los necesarios para UI
+      }),
+
+      // 5. Totales financieros (Traer solo campos necesarios)
+      prisma.producto.findMany({
+        where: { activo: true },
+        select: {
+          stock: true,
+          precio: true,
+          costo: true
+        }
+      }),
+
+      // 6. Últimos movimientos
+      prisma.movimiento.findMany({
+        take: 10,
+        orderBy: { createdAt: "desc" },
+        include: {
+          producto: {
+            select: { codigo: true, nombre: true }
+          }
+        }
+      }),
+
+      // 7. Productos por categoría
+      prisma.categoria.findMany({
+        select: {
+          id: true,
+          nombre: true,
+          imagenUrl: true,
+          _count: {
+            select: { productos: true }
+          }
+        },
+        orderBy: { nombre: "asc" }
+      })
+    ]);
+
+    // Calcular totales en memoria (mucho más rápido con payload reducido)
+    const valorizacion = resumenFinanciero.reduce((acc, p) => acc + (p.stock * Number(p.costo)), 0);
+    const valorVenta = resumenFinanciero.reduce((acc, p) => acc + (p.stock * Number(p.precio)), 0);
+
+    // Contar total de stock bajo sin traer todos los registros
+    // Nota: Esto es una query adicional rápida
+    const totalStockBajoCount = await prisma.producto.count({
       where: {
         activo: true,
-        stock: {
-          lte: prisma.producto.fields.stockMinimo
-        }
-      },
-      select: {
-        id: true,
-        codigo: true,
-        nombre: true,
-        stock: true,
-        stockMinimo: true,
-        categoria: { select: { nombre: true } }
-      },
-      orderBy: { stock: "asc" }
-    });
-    
-    // Filtrar manualmente ya que Prisma no soporta comparar campos directamente
-    const productos = await prisma.producto.findMany({
-      where: { activo: true },
-      select: {
-        id: true,
-        codigo: true,
-        nombre: true,
-        stock: true,
-        stockMinimo: true,
-        precio: true,
-        costo: true,
-        categoria: { select: { nombre: true } }
+        stock: { lte: prisma.producto.fields.stockMinimo }
       }
     });
-    
-    const productosConStockBajo = productos.filter(p => p.stock <= p.stockMinimo);
-    
-    // Valorización del inventario (stock * costo)
-    const valorizacion = productos.reduce((acc, p) => {
-      return acc + (p.stock * Number(p.costo));
-    }, 0);
-    
-    // Valor de venta potencial (stock * precio)
-    const valorVenta = productos.reduce((acc, p) => {
-      return acc + (p.stock * Number(p.precio));
-    }, 0);
-    
-    // Últimos movimientos
-    const ultimosMovimientos = await prisma.movimiento.findMany({
-      take: 10,
-      orderBy: { createdAt: "desc" },
-      include: {
-        producto: {
-          select: { codigo: true, nombre: true }
-        }
-      }
-    });
-    
-    // Productos por categoría
-    const productosPorCategoria = await prisma.categoria.findMany({
-      select: {
-        id: true,
-        nombre: true,
-        _count: {
-          select: { productos: true }
-        }
-      },
-      orderBy: { nombre: "asc" }
-    });
-    
+
     res.json({
       resumen: {
         totalProductos,
         totalCategorias,
         totalProveedores,
-        productosConStockBajo: productosConStockBajo.length,
+        productosConStockBajo: totalStockBajoCount,
         valorizacionInventario: valorizacion,
         valorVentaPotencial: valorVenta,
         margenPotencial: valorVenta - valorizacion
       },
       alertas: {
-        stockBajo: productosConStockBajo.slice(0, 10)
+        stockBajo: productosConStockBajoDB
       },
       ultimosMovimientos,
       productosPorCategoria

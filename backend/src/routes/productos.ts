@@ -72,7 +72,7 @@ router.get("/:id", async (req, res) => {
 // POST /api/productos - Crear producto
 router.post("/", async (req, res) => {
     try {
-        const { codigo, nombre, descripcion, precio, costo, stock, stockMinimo, categoriaId, proveedorId } = req.body;
+        const { codigo, nombre, descripcion, precio, costo, stock, stockMinimo, categoriaId, proveedorId, imagenUrl } = req.body;
 
         if (!codigo || !nombre || !precio || !costo || !categoriaId) {
             return res.status(400).json({
@@ -90,7 +90,8 @@ router.post("/", async (req, res) => {
                 stock: stock || 0,
                 stockMinimo: stockMinimo || 5,
                 categoriaId,
-                proveedorId
+                proveedorId,
+                imagenUrl
             },
             include: {
                 categoria: true,
@@ -115,7 +116,7 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { codigo, nombre, descripcion, precio, costo, stockMinimo, categoriaId, proveedorId, activo } = req.body;
+        const { codigo, nombre, descripcion, precio, costo, stockMinimo, categoriaId, proveedorId, activo, imagenUrl } = req.body;
 
         const data: any = {};
         if (codigo !== undefined) data.codigo = codigo;
@@ -127,6 +128,7 @@ router.put("/:id", async (req, res) => {
         if (categoriaId !== undefined) data.categoriaId = categoriaId;
         if (proveedorId !== undefined) data.proveedorId = proveedorId;
         if (activo !== undefined) data.activo = activo;
+        if (imagenUrl !== undefined) data.imagenUrl = imagenUrl;
 
         const producto = await prisma.producto.update({
             where: { id: parseInt(id) },

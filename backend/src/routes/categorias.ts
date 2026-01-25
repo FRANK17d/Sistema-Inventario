@@ -44,14 +44,14 @@ router.get("/:id", async (req, res) => {
 // POST /api/categorias - Crear categoría
 router.post("/", async (req, res) => {
     try {
-        const { nombre, descripcion } = req.body;
+        const { nombre, descripcion, imagenUrl } = req.body;
 
         if (!nombre) {
             return res.status(400).json({ error: "El nombre es requerido" });
         }
 
         const categoria = await prisma.categoria.create({
-            data: { nombre, descripcion }
+            data: { nombre, descripcion, imagenUrl }
         });
 
         res.status(201).json(categoria);
@@ -68,11 +68,11 @@ router.post("/", async (req, res) => {
 router.put("/:id", async (req, res) => {
     try {
         const { id } = req.params;
-        const { nombre, descripcion } = req.body;
+        const { nombre, descripcion, imagenUrl } = req.body;
 
         const categoria = await prisma.categoria.update({
             where: { id: parseInt(id) },
-            data: { nombre, descripcion }
+            data: { nombre, descripcion, imagenUrl }
         });
 
         res.json(categoria);
