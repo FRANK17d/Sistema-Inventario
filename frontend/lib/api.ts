@@ -309,8 +309,18 @@ export async function uploadImagen(file: File): Promise<{ url: string; public_id
     const formData = new FormData();
     formData.append('imagen', file);
 
+    const headers: Record<string, string> = {};
+
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+
     const res = await fetch(`${API_BASE_URL}/upload/imagen`, {
         method: 'POST',
+        headers,
         body: formData,
         // Note: Don't set Content-Type header, browser will set it with boundary for multipart/form-data
     });
