@@ -11,7 +11,8 @@ import {
   ChevronRight,
   X,
   LogOut,
-  User
+  User,
+  Shield
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -19,11 +20,13 @@ import { useAuth } from "@/components/providers/auth-provider"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
 const menuItems = [
-  { icon: LayoutDashboard, label: "Dashboard", href: "/" },
-  { icon: Package, label: "Productos", href: "/productos" },
-  { icon: Tags, label: "Categorías", href: "/categorias" },
-  { icon: Truck, label: "Proveedores", href: "/proveedores" },
-  { icon: ArrowLeftRight, label: "Movimientos", href: "/movimientos" },
+  { icon: LayoutDashboard, label: "Dashboard", href: "/", permission: "DASHBOARD_VER" },
+  { icon: Package, label: "Productos", href: "/productos", permission: "PRODUCTO_VER" },
+  { icon: Tags, label: "Categorías", href: "/categorias", permission: "CATEGORIA_VER" },
+  { icon: Truck, label: "Proveedores", href: "/proveedores", permission: "PROVEEDOR_VER" },
+  { icon: ArrowLeftRight, label: "Movimientos", href: "/movimientos", permission: "MOVIMIENTO_VER" },
+  { icon: User, label: "Usuarios", href: "/usuarios", permission: "USUARIO_VER" },
+  { icon: Shield, label: "Roles", href: "/roles", permission: "ROL_VER" },
 ]
 
 interface SidebarProps {
@@ -33,6 +36,13 @@ interface SidebarProps {
 export function Sidebar({ onClose }: SidebarProps) {
   const pathname = usePathname()
   const { logout, user } = useAuth()
+
+  // Filter items based on user permissions
+  const filteredItems = menuItems.filter(item => {
+    if (!user) return false
+    if (!item.permission) return true
+    return user.permisos?.includes(item.permission)
+  })
 
   return (
     <aside className="flex flex-col h-full w-64 bg-background border-r border-border/50 shadow-xl shadow-black/5 dark:shadow-none transition-all duration-300">
@@ -44,7 +54,7 @@ export function Sidebar({ onClose }: SidebarProps) {
           </div>
           <div className="flex flex-col">
             <span className="font-bold text-lg leading-tight tracking-tight">ABASTO</span>
-            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Inventory</span>
+            <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest">Inventario</span>
           </div>
         </div>
         <Button
@@ -66,7 +76,7 @@ export function Sidebar({ onClose }: SidebarProps) {
             Principal
           </span>
           <div className="space-y-1">
-            {menuItems.map((item) => {
+            {filteredItems.map((item) => {
               const isActive = pathname === item.href
               return (
                 <Link

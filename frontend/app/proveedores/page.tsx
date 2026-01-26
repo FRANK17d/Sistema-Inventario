@@ -32,6 +32,8 @@ import {
     type Proveedor, type ProveedorInput
 } from "@/lib/api"
 import { useProveedores } from "@/hooks/use-data"
+import { PermissionGuard } from "@/components/auth/permission-guard"
+import { PermissionGate } from "@/components/auth/permission-gate"
 
 export default function ProveedoresPage() {
     const { data: proveedores, isLoading: loading, mutate: mutateProveedores } = useProveedores()
@@ -129,157 +131,165 @@ export default function ProveedoresPage() {
     }
 
     return (
-        <Shell>
-            <div className="flex flex-col gap-4">
-                <div className="flex justify-end">
-                    <Button onClick={openCreateDialog}>
-                        <Plus className="h-4 w-4 mr-2" />
-                        Nuevo Proveedor
-                    </Button>
+        <PermissionGuard requiredPermission="PROVEEDOR_VER">
+            <Shell>
+                <div className="flex flex-col gap-4">
+                    <div className="flex justify-end">
+                        <PermissionGate permission="PROVEEDOR_CREAR">
+                            <Button onClick={openCreateDialog}>
+                                <Plus className="h-4 w-4 mr-2" />
+                                Nuevo Proveedor
+                            </Button>
+                        </PermissionGate>
+                    </div>
+
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {[...Array(6)].map((_, i) => (
+                                <Card key={i} className="overflow-hidden">
+                                    <CardHeader className="pb-3 bg-muted/30">
+                                        <div className="flex justify-between items-start">
+                                            <Skeleton className="h-5 w-32" />
+                                            <Skeleton className="h-5 w-16 rounded-full" />
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="pt-4 space-y-2">
+                                        <Skeleton className="h-4 w-40" />
+                                        <Skeleton className="h-4 w-32" />
+                                        <Skeleton className="h-4 w-36" />
+                                        <Skeleton className="h-4 w-44" />
+                                        <div className="pt-3 mt-2 border-t flex justify-between items-center">
+                                            <Skeleton className="h-3 w-20" />
+                                            <div className="flex gap-1">
+                                                <Skeleton className="w-8 h-8" />
+                                                <Skeleton className="w-8 h-8" />
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    ) : (!proveedores || proveedores.length === 0) ? (
+                        <Card className="p-12 text-center text-muted-foreground">
+                            No hay proveedores registrados
+                        </Card>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {proveedores.map((prov) => (
+                                <Card key={prov.id} className="overflow-hidden">
+                                    <CardHeader className="pb-3 bg-muted/30">
+                                        <div className="flex justify-between items-start">
+                                            <CardTitle className="text-lg">{prov.nombre}</CardTitle>
+                                            <Badge variant={prov.activo ? "default" : "secondary"}>
+                                                {prov.activo ? "Activo" : "Inactivo"}
+                                            </Badge>
+                                        </div>
+                                    </CardHeader>
+                                    <CardContent className="pt-4 space-y-2 text-sm">
+                                        {prov.contacto && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <span className="font-medium text-foreground">Contacto:</span> {prov.contacto}
+                                            </div>
+                                        )}
+                                        {prov.telefono && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Phone className="h-4 w-4" /> {prov.telefono}
+                                            </div>
+                                        )}
+                                        {prov.email && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <Mail className="h-4 w-4" /> {prov.email}
+                                            </div>
+                                        )}
+                                        {prov.direccion && (
+                                            <div className="flex items-center gap-2 text-muted-foreground">
+                                                <MapPin className="h-4 w-4" /> {prov.direccion}
+                                            </div>
+                                        )}
+                                        <div className="pt-3 mt-2 border-t flex justify-between items-center">
+                                            <span className="text-xs text-muted-foreground">Productos: {prov._count?.productos || 0}</span>
+                                            <div className="flex gap-1">
+                                                <PermissionGate permission="PROVEEDOR_EDITAR">
+                                                    <Button variant="ghost" size="icon" onClick={() => openEditDialog(prov)}>
+                                                        <Pencil className="h-4 w-4" />
+                                                    </Button>
+                                                </PermissionGate>
+                                                <PermissionGate permission="PROVEEDOR_ELIMINAR">
+                                                    <Button variant="ghost" size="icon" onClick={() => confirmDelete(prov)} disabled={(prov._count?.productos || 0) > 0}>
+                                                        <Trash2 className="h-4 w-4 text-destructive" />
+                                                    </Button>
+                                                </PermissionGate>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    )}
                 </div>
 
-                {loading ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {[...Array(6)].map((_, i) => (
-                            <Card key={i} className="overflow-hidden">
-                                <CardHeader className="pb-3 bg-muted/30">
-                                    <div className="flex justify-between items-start">
-                                        <Skeleton className="h-5 w-32" />
-                                        <Skeleton className="h-5 w-16 rounded-full" />
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-4 space-y-2">
-                                    <Skeleton className="h-4 w-40" />
-                                    <Skeleton className="h-4 w-32" />
-                                    <Skeleton className="h-4 w-36" />
-                                    <Skeleton className="h-4 w-44" />
-                                    <div className="pt-3 mt-2 border-t flex justify-between items-center">
-                                        <Skeleton className="h-3 w-20" />
-                                        <div className="flex gap-1">
-                                            <Skeleton className="w-8 h-8" />
-                                            <Skeleton className="w-8 h-8" />
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                ) : (!proveedores || proveedores.length === 0) ? (
-                    <Card className="p-12 text-center text-muted-foreground">
-                        No hay proveedores registrados
-                    </Card>
-                ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {proveedores.map((prov) => (
-                            <Card key={prov.id} className="overflow-hidden">
-                                <CardHeader className="pb-3 bg-muted/30">
-                                    <div className="flex justify-between items-start">
-                                        <CardTitle className="text-lg">{prov.nombre}</CardTitle>
-                                        <Badge variant={prov.activo ? "default" : "secondary"}>
-                                            {prov.activo ? "Activo" : "Inactivo"}
-                                        </Badge>
-                                    </div>
-                                </CardHeader>
-                                <CardContent className="pt-4 space-y-2 text-sm">
-                                    {prov.contacto && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <span className="font-medium text-foreground">Contacto:</span> {prov.contacto}
-                                        </div>
-                                    )}
-                                    {prov.telefono && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Phone className="h-4 w-4" /> {prov.telefono}
-                                        </div>
-                                    )}
-                                    {prov.email && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <Mail className="h-4 w-4" /> {prov.email}
-                                        </div>
-                                    )}
-                                    {prov.direccion && (
-                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                            <MapPin className="h-4 w-4" /> {prov.direccion}
-                                        </div>
-                                    )}
-                                    <div className="pt-3 mt-2 border-t flex justify-between items-center">
-                                        <span className="text-xs text-muted-foreground">Productos: {prov._count?.productos || 0}</span>
-                                        <div className="flex gap-1">
-                                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(prov)}>
-                                                <Pencil className="h-4 w-4" />
-                                            </Button>
-                                            <Button variant="ghost" size="icon" onClick={() => confirmDelete(prov)} disabled={(prov._count?.productos || 0) > 0}>
-                                                <Trash2 className="h-4 w-4 text-destructive" />
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Create/Edit Dialog */}
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle>{editingProveedor ? "Editar Proveedor" : "Nuevo Proveedor"}</DialogTitle>
-                        <DialogDescription>
-                            {editingProveedor ? "Modifica los datos del proveedor" : "Ingresa los datos del nuevo proveedor"}
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="space-y-2">
-                            <Label htmlFor="nombre">Nombre *</Label>
-                            <Input id="nombre" value={formData.nombre} onChange={e => setFormData({ ...formData, nombre: e.target.value })} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="contacto">Contacto</Label>
-                            <Input id="contacto" value={formData.contacto} onChange={e => setFormData({ ...formData, contacto: e.target.value })} />
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
+                {/* Create/Edit Dialog */}
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                    <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>{editingProveedor ? "Editar Proveedor" : "Nuevo Proveedor"}</DialogTitle>
+                            <DialogDescription>
+                                {editingProveedor ? "Modifica los datos del proveedor" : "Ingresa los datos del nuevo proveedor"}
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
                             <div className="space-y-2">
-                                <Label htmlFor="telefono">Teléfono</Label>
-                                <Input id="telefono" value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} />
+                                <Label htmlFor="nombre">Nombre *</Label>
+                                <Input id="nombre" value={formData.nombre} onChange={e => setFormData({ ...formData, nombre: e.target.value })} />
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="email">Email</Label>
-                                <Input id="email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                <Label htmlFor="contacto">Contacto</Label>
+                                <Input id="contacto" value={formData.contacto} onChange={e => setFormData({ ...formData, contacto: e.target.value })} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="telefono">Teléfono</Label>
+                                    <Input id="telefono" value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="email">Email</Label>
+                                    <Input id="email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="direccion">Dirección</Label>
+                                <Input id="direccion" value={formData.direccion} onChange={e => setFormData({ ...formData, direccion: e.target.value })} />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="direccion">Dirección</Label>
-                            <Input id="direccion" value={formData.direccion} onChange={e => setFormData({ ...formData, direccion: e.target.value })} />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                        <Button onClick={handleSubmit} disabled={saving || !formData.nombre}>
-                            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            {editingProveedor ? "Guardar Cambios" : "Crear Proveedor"}
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                        <DialogFooter>
+                            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+                            <Button onClick={handleSubmit} disabled={saving || !formData.nombre}>
+                                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                {editingProveedor ? "Guardar Cambios" : "Crear Proveedor"}
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
 
-            {/* Delete Confirmation */}
-            <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>¿Eliminar proveedor?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Esta acción no se puede deshacer. Se eliminará permanentemente el proveedor "{deletingProveedor?.nombre}".
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-                            {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                            Eliminar
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        </Shell>
+                {/* Delete Confirmation */}
+                <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                    <AlertDialogContent>
+                        <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar proveedor?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                                Esta acción no se puede deshacer. Se eliminará permanentemente el proveedor "{deletingProveedor?.nombre}".
+                            </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                                {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                                Eliminar
+                            </AlertDialogAction>
+                        </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </Shell>
+        </PermissionGuard>
     )
 }

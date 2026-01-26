@@ -10,6 +10,9 @@ import movimientosRouter from "./routes/movimientos.js";
 import dashboardRouter from "./routes/dashboard.js";
 import uploadRouter from "./routes/upload.js";
 import authRouter from "./routes/auth.js";
+import rolesRouter from "./routes/roles.js";
+import permisosRouter from "./routes/permisos.js";
+import usuariosRouter from "./routes/usuarios.js";
 
 const app = express();
 // Force restart
@@ -27,6 +30,9 @@ app.use("/api/productos", productosRouter);
 app.use("/api/movimientos", movimientosRouter);
 app.use("/api/dashboard", dashboardRouter);
 app.use("/api/upload", uploadRouter);
+app.use("/api/roles", rolesRouter);
+app.use("/api/permisos", permisosRouter);
+app.use("/api/usuarios", usuariosRouter);
 
 // Health check
 app.get("/api/health", (req, res) => {

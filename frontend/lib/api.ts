@@ -140,7 +140,8 @@ export interface User {
     id: number;
     nombre: string;
     email: string;
-    rol: "ADMIN" | "ALMACENERO";
+    rol: string;
+    permisos?: string[];
 }
 
 export interface LoginResponse {
@@ -192,8 +193,8 @@ export async function login(credentials: LoginCredentials): Promise<LoginRespons
     });
 }
 
-export async function verifyAuth(token: string): Promise<{ message: string }> {
-    return fetchApi<{ message: string }>('/auth/me', {
+export async function verifyAuth(token: string): Promise<User> {
+    return fetchApi<User>('/auth/me', {
         headers: {
             Authorization: `Bearer ${token}`
         }
@@ -301,6 +302,93 @@ export async function createMovimiento(data: MovimientoInput): Promise<Movimient
     return fetchApi<Movimiento & { stockAnterior: number; stockNuevo: number }>('/movimientos', {
         method: 'POST',
         body: JSON.stringify(data),
+    });
+}
+
+// ==================== ROLES & PERMISOS ====================
+export interface Permiso {
+    id: number;
+    nombre: string;
+    descripcion?: string;
+}
+
+export interface Rol {
+    id: number;
+    nombre: string;
+    descripcion?: string;
+    permisos: Permiso[]; // Permisos aplanados o detalle
+    _count?: { usuarios: number };
+}
+
+export interface RolInput {
+    nombre: string;
+    descripcion?: string;
+    permisos: number[]; // IDs de permisos
+}
+
+export async function getRoles(): Promise<Rol[]> {
+    return fetchApi<Rol[]>('/roles');
+}
+
+export async function getPermisos(): Promise<Permiso[]> {
+    return fetchApi<Permiso[]>('/permisos');
+}
+
+export async function createRol(data: RolInput): Promise<Rol> {
+    return fetchApi<Rol>('/roles', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function updateRol(id: number, data: Partial<RolInput>): Promise<Rol> {
+    return fetchApi<Rol>(`/roles/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteRol(id: number): Promise<void> {
+    await fetchApi(`/roles/${id}`, {
+        method: 'DELETE',
+    });
+}
+
+// ==================== USUARIOS ====================
+export interface Usuario extends User {
+    rolId: number;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export interface UsuarioInput {
+    nombre: string;
+    email: string;
+    password?: string;
+    rolId: number;
+}
+
+export async function getUsuarios(): Promise<Usuario[]> {
+    return fetchApi<Usuario[]>('/usuarios');
+}
+
+export async function createUsuario(data: UsuarioInput): Promise<Usuario> {
+    return fetchApi<Usuario>('/usuarios', {
+        method: 'POST',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function updateUsuario(id: number, data: Partial<UsuarioInput>): Promise<Usuario> {
+    return fetchApi<Usuario>(`/usuarios/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+    });
+}
+
+export async function deleteUsuario(id: number): Promise<void> {
+    await fetchApi(`/usuarios/${id}`, {
+        method: 'DELETE',
     });
 }
 

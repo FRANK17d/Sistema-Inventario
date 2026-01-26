@@ -10,6 +10,17 @@ export class AuthService {
     async login(data: z.infer<typeof loginSchema>) {
         const usuario = await prisma.usuario.findUnique({
             where: { email: data.email },
+            include: {
+                rol: {
+                    include: {
+                        permisos: {
+                            include: {
+                                permiso: true
+                            }
+                        }
+                    }
+                }
+            }
         });
 
         if (!usuario) {
@@ -22,15 +33,19 @@ export class AuthService {
             throw new Error("Credenciales inválidas");
         }
 
+        // Aplanar permisos
+        const permisos = usuario.rol.permisos.map(p => p.permiso.nombre);
+
         // Generar Token JWT
         const token = jwt.sign(
             {
                 id: usuario.id,
                 email: usuario.email,
-                rol: usuario.rol,
+                rol: usuario.rol.nombre,
+                permisos
             },
             JWT_SECRET,
-            { expiresIn: "8h" } // Duración de la sesión
+            { expiresIn: "8h" }
         );
 
         return {
@@ -39,8 +54,40 @@ export class AuthService {
                 id: usuario.id,
                 nombre: usuario.nombre,
                 email: usuario.email,
-                rol: usuario.rol,
+                rol: usuario.rol.nombre,
+                permisos
             },
         };
     }
+
+    async getProfile(userId: number) {
+        const usuario = await prisma.usuario.findUnique({
+            where: { id: userId },
+            include: {
+                rol: {
+                    include: {
+                        permisos: {
+                            include: {
+                                permiso: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!usuario) {
+            throw new Error("Usuario no encontrado");
+        }
+
+        const permisos = usuario.rol.permisos.map(p => p.permiso.nombre);
+
+        return {
+            id: usuario.id,
+            nombre: usuario.nombre,
+            email: usuario.email,
+            rol: usuario.rol.nombre,
+            permisos
+        };
+    }   
 }

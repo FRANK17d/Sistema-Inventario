@@ -9,6 +9,7 @@ interface AuthContextType {
     user: User | null;
     login: (token: string, userData: User) => void;
     logout: () => void;
+    refreshProfile: () => Promise<void>;
     loading: boolean;
 }
 
@@ -20,19 +21,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const router = useRouter();
     const pathname = usePathname();
 
+    const fetchProfile = async (currentUser: User | null = null) => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        try {
+            const updatedUser = await verifyAuth(token);
+            setUser(updatedUser);
+            // Optionally update localStorage if we want to persist between reloads without network
+            // But relying on network for permissions is safer for "dynamic" updates.
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+            return updatedUser;
+        } catch (error) {
+            console.error("Error refreshing profile", error);
+            // If checking auth failed (401), we might want to logout, but for refresh we might just fail silently
+        }
+    };
+
     useEffect(() => {
         // 1. Verificar si hay sesión al cargar
         const checkAuth = async () => {
             const token = localStorage.getItem("token");
             const savedUser = localStorage.getItem("user");
 
-            if (token && savedUser) {
+            if (token) {
                 try {
-                    // Validar token con backend
-                    await verifyAuth(token);
-                    setUser(JSON.parse(savedUser));
+                    // Validar token con backend y obtener perfil fresco
+                    const userFromApi = await verifyAuth(token);
+                    setUser(userFromApi);
+                    localStorage.setItem("user", JSON.stringify(userFromApi));
                 } catch (error) {
                     console.error("Sesión inválida o expirada", error);
+                    // Fallback to saved user if API fails? Or logout?
+                    // Better to logout if token is invalid.
                     logout();
                 }
             }
@@ -74,7 +95,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, login, logout, loading }}>
+        <AuthContext.Provider value={{ user, login, logout, refreshProfile: async () => { await fetchProfile(); }, loading }}>
             {!loading && children}
         </AuthContext.Provider>
     );

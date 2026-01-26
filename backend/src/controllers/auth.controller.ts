@@ -36,8 +36,18 @@ export class AuthController {
     };
 
     me = async (req: Request, res: Response) => {
-        // Este endpoint devolverá la info del usuario basada en el token (middleware)
-        // Por ahora devolvemos un mock hasta implementar el middleware
-        res.json({ message: "Endpoint autenticado (WIP)" });
+        try {
+            // @ts-ignore - userId is added by auth middleware
+            if (!req.user?.id) {
+                return res.status(401).json({ error: "No autenticado" });
+            }
+
+            // @ts-ignore
+            const profile = await this.service.getProfile(req.user.id);
+            res.json(profile);
+        } catch (error: any) {
+            console.error("Error fetching profile:", error);
+            res.status(500).json({ error: "Error al obtener perfil" });
+        }
     }
 }

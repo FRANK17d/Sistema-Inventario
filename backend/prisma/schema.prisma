@@ -100,12 +100,34 @@ model Usuario {
   nombre    String
   email     String   @unique
   password  String
-  rol       Rol      @default(ALMACENERO)
+  rolId     Int
+  rol       Rol      @relation(fields: [rolId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum Rol {
-  ADMIN
-  ALMACENERO
+model Rol {
+  id          Int          @id @default(autoincrement())
+  nombre      String       @unique
+  descripcion String?
+  usuarios    Usuario[]
+  permisos    RolPermiso[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Permiso {
+  id          Int          @id @default(autoincrement())
+  nombre      String       @unique // Ej: PRODUCTO_CREAR
+  descripcion String?
+  roles       RolPermiso[]
+}
+
+model RolPermiso {
+  rolId     Int
+  permisoId Int
+  rol       Rol     @relation(fields: [rolId], references: [id])
+  permiso   Permiso @relation(fields: [permisoId], references: [id])
+
+  @@id([rolId, permisoId])
 }

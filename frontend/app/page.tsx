@@ -37,25 +37,29 @@ const BottomStats = dynamic(
   }
 )
 
+import { PermissionGuard } from "@/components/auth/permission-guard"
+
 export default function DashboardPage() {
   return (
-    <Shell>
-      {/* Stats - Eager loaded for LCP */}
-      <StatCards />
+    <PermissionGuard requiredPermission="DASHBOARD_VER">
+      <Shell>
+        {/* Stats - Eager loaded for LCP */}
+        <StatCards />
 
-      {/* Chart and Sales Panel */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-6">
-        <div className="xl:col-span-2 min-h-[400px]">
-          <InventoryChart />
+        {/* Chart and Sales Panel */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-6">
+          <div className="xl:col-span-2 min-h-[400px]">
+            <InventoryChart />
+          </div>
+          <div className="xl:col-span-1">
+            {/* SalesPanel is lightweight enough to keep eager or could be lazy if desired */}
+            <SalesPanel />
+          </div>
         </div>
-        <div className="xl:col-span-1">
-          {/* SalesPanel is lightweight enough to keep eager or could be lazy if desired */}
-          <SalesPanel />
-        </div>
-      </div>
 
-      {/* Bottom Stats with Mini Charts */}
-      <BottomStats />
-    </Shell>
+        {/* Bottom Stats with Mini Charts */}
+        <BottomStats />
+      </Shell>
+    </PermissionGuard>
   )
 }

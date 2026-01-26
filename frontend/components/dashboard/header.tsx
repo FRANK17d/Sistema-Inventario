@@ -17,6 +17,8 @@ export function Header({ onMenuToggle }: HeaderProps) {
     if (path.startsWith("/productos")) return "Productos"
     if (path.startsWith("/categorias")) return "Categorías"
     if (path.startsWith("/proveedores")) return "Proveedores"
+    if (path.startsWith("/usuarios")) return "Usuarios"
+    if (path.startsWith("/roles")) return "Roles y Permisos"
     if (path.startsWith("/movimientos")) return "Movimientos"
     return "Dashboard"
   }

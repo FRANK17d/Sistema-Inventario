@@ -12,8 +12,8 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
     }
 
     try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        (req as any).user = decoded; // Añadimos el usuario a la request
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        req.user = decoded; // Typescript should verify this now
         next();
     } catch (error) {
         return res.status(403).json({ error: "Token inválido o expirado." });
@@ -22,10 +22,22 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction) => 
 
 export const requireRole = (roles: string[]) => {
     return (req: Request, res: Response, next: NextFunction) => {
-        const user = (req as any).user;
+        const user = req.user;
 
         if (!user || !roles.includes(user.rol)) {
             return res.status(403).json({ error: "No tienes permisos para realizar esta acción." });
+        }
+
+        next();
+    };
+};
+
+export const requirePermission = (permission: string) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        const user = req.user;
+
+        if (!user || !user.permisos.includes(permission)) {
+            return res.status(403).json({ error: `Requiere permiso: ${permission}` });
         }
 
         next();

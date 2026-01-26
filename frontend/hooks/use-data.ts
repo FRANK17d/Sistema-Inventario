@@ -1,5 +1,6 @@
 import useSWR from 'swr'
-import type { DashboardData, Producto, Categoria, Proveedor, Movimiento } from '@/lib/api'
+import * as api from '@/lib/api'
+import type { DashboardData, Producto, Categoria, Proveedor, Movimiento, Rol, Permiso, Usuario } from '@/lib/api'
 import {
     getDashboard,
     getProductos,
@@ -10,23 +11,56 @@ import {
 
 // Dashboard hook con polling cada 30s
 export function useDashboard() {
-    return useSWR<DashboardData>('/dashboard', getDashboard, {
+    return useSWR<DashboardData>('/dashboard', api.getDashboard, {
         refreshInterval: 30000, // 30 segundos
         revalidateOnFocus: true,
         dedupingInterval: 5000,
     })
 }
 
-// Productos hook
 export function useProductos() {
-    return useSWR<Producto[]>('/productos', getProductos, {
-        revalidateOnFocus: true,
-    })
+    const { data, error, mutate } = useSWR("/productos", api.getProductos);
+    return {
+        productos: data,
+        isLoading: !error && !data,
+        isError: error,
+        mutate,
+    };
+}
+
+export function useRoles() {
+    const { data, error, mutate } = useSWR<Rol[]>("/roles", api.getRoles);
+    return {
+        roles: data,
+        isLoading: !error && !data,
+        isError: error,
+        mutate,
+    };
+}
+
+export function usePermisos() {
+    const { data, error, mutate } = useSWR<Permiso[]>("/permisos", api.getPermisos);
+    return {
+        permisos: data,
+        isLoading: !error && !data,
+        isError: error,
+        mutate,
+    };
+}
+
+export function useUsuarios() {
+    const { data, error, mutate } = useSWR<Usuario[]>("/usuarios", api.getUsuarios);
+    return {
+        usuarios: data,
+        isLoading: !error && !data,
+        isError: error,
+        mutate,
+    };
 }
 
 // Categorías hook
 export function useCategorias() {
-    return useSWR<Categoria[]>('/categorias', getCategorias, {
+    return useSWR<Categoria[]>('/categorias', api.getCategorias, {
         revalidateOnFocus: true,
     })
 }
