@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { CategoriaController } from "../controllers/categoria.controller.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 const controller = new CategoriaController();
+
+router.use(verifyToken);
 
 // GET /api/categorias - Listar todas las categorías
 router.get("/", controller.listar);

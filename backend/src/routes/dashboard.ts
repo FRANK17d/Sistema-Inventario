@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { prisma } from "../lib/prisma.js";
 import { Prisma } from "@prisma/client";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
 // GET /api/dashboard - Estadísticas del inventario
-router.get("/", async (req, res) => {
+router.get("/", verifyToken, async (req, res) => {
   try {
     // Queries paralelas optimizadas
     const [

@@ -11,8 +11,8 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-    const email = "admin@abasto.com";
-    const password = "admin123";
+    const email = "admin3@abasto.com";
+    const password = "admin1238";
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const admin = await prisma.usuario.upsert({
@@ -26,7 +26,22 @@ async function main() {
         },
     });
 
-    console.log({ admin });
+    const almaceneroEmail = "almacenero@abasto.com";
+    const almaceneroPassword = "almacen123";
+    const hashedAlmaceneroPassword = await bcrypt.hash(almaceneroPassword, 10);
+
+    const almacenero = await prisma.usuario.upsert({
+        where: { email: almaceneroEmail },
+        update: {},
+        create: {
+            nombre: "Almacenero Jefe",
+            email: almaceneroEmail,
+            password: hashedAlmaceneroPassword,
+            rol: "ALMACENERO",
+        },
+    });
+
+    console.log({ admin, almacenero });
 }
 
 main()

@@ -12,6 +12,7 @@ import uploadRouter from "./routes/upload.js";
 import authRouter from "./routes/auth.js";
 
 const app = express();
+// Force restart
 const PORT = process.env.PORT;
 
 // Middleware

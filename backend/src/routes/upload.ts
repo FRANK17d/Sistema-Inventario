@@ -1,8 +1,11 @@
 import { Router } from "express";
 import multer from "multer";
 import cloudinary from "../lib/cloudinary.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = Router();
+
+router.use(verifyToken);
 
 // Configure multer for memory storage (files stored in buffer)
 const storage = multer.memoryStorage();

@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { ProveedorController } from "../controllers/proveedor.controller.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 const controller = new ProveedorController();
+
+router.use(verifyToken);
 
 // GET /api/proveedores - Listar todos los proveedores
 router.get("/", controller.listar);

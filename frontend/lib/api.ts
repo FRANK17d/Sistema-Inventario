@@ -155,12 +155,26 @@ export interface LoginCredentials {
 
 // API Functions
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
+    const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+    };
+
+    // Merge custom headers
+    if (options?.headers) {
+        Object.assign(headers, options.headers);
+    }
+
+    // Auto-inject token if available
+    if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('token');
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+    }
+
     const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         ...options,
-        headers: {
-            'Content-Type': 'application/json',
-            ...(options?.headers),
-        },
+        headers,
     });
 
     if (!res.ok) {

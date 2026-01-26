@@ -1,8 +1,12 @@
 import { Router } from "express";
 import { ProductoController } from "../controllers/producto.controller.js";
+import { verifyToken } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 const controller = new ProductoController();
+
+// Aplicar middleware de autenticación a todas las rutas
+router.use(verifyToken);
 
 // GET /api/productos - Listar productos con filtros
 router.get("/", controller.listar);
