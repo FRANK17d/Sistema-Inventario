@@ -15,7 +15,6 @@ import permisosRouter from "./routes/permisos.js";
 import usuariosRouter from "./routes/usuarios.js";
 
 const app = express();
-// Force restart
 const PORT = process.env.PORT;
 
 // Middleware
@@ -40,5 +39,5 @@ app.get("/api/health", (req, res) => {
 });
 
 app.listen(PORT, () => {
-    console.log(`🚀 Server running at http://localhost:${PORT}`);
+    console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
