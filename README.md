@@ -13,7 +13,7 @@ Sistema completo de gestión de inventario con autenticación, roles y permisos 
 ### 🔐 Autenticación y Autorización
 - Login seguro con **JWT**
 - Sistema de **roles y permisos granulares**
-- 22 permisos configurables por módulo
+- 23 permisos configurables por módulo
 - Redirección inteligente según permisos del usuario
 - Protección de rutas en frontend y backend
 
