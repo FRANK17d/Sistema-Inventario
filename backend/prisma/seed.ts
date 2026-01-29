@@ -124,6 +124,104 @@ async function main() {
     });
 
     console.log({ admin, almacenero });
+
+    // 4. Crear Categorías
+    console.log("Creando categorías...");
+    const categorias = [
+        { nombre: "Electrónica", descripcion: "Dispositivos electrónicos y gadgets" },
+        { nombre: "Ropa", descripcion: "Indumentaria para todas las edades" },
+        { nombre: "Hogar", descripcion: "Artículos para el hogar y decoración" },
+    ];
+
+    const categoriasMap = new Map();
+    for (const cat of categorias) {
+        const categoria = await prisma.categoria.upsert({
+            where: { nombre: cat.nombre },
+            update: {},
+            create: cat,
+        });
+        categoriasMap.set(cat.nombre, categoria.id);
+    }
+
+    // 5. Crear Proveedores
+    console.log("Creando proveedores...");
+    const proveedores = [
+        { nombre: "TechDistro SA", email: "contacto@techdistro.com", telefono: "123456789" },
+        { nombre: "ModaGlobal Inc", email: "ventas@modaglobal.com", telefono: "987654321" },
+    ];
+
+    const proveedoresMap = new Map();
+    for (const prov of proveedores) {
+        const proveedor = await prisma.proveedor.upsert({
+            where: { id: -1 }, // Hack simple porque nombre no es unique en schema, ajusta si es necesario o usa findFirst
+            update: {},
+            create: prov,
+        });
+        // Como 'nombre' no es unique en el schema actual (ver schema.prisma), upsert por nombre no es directo.
+        // Pero para simplificar el seed y evitar errores, usaremos create si no hay proveedores.
+        // O mejor: buscamos primero.
+    }
+
+    // CORRECCIÓN: Upsert requiere unique field en where. Proveedor no tiene nombre unique.
+    // Usaremos findFirst para verificar existencia.
+    const prov1 = await prisma.proveedor.findFirst({ where: { nombre: "TechDistro SA" } });
+    let p1Id;
+    if (!prov1) {
+        const p = await prisma.proveedor.create({ data: { nombre: "TechDistro SA", email: "contacto@techdistro.com" } });
+        p1Id = p.id;
+    } else { p1Id = prov1.id; }
+
+    const prov2 = await prisma.proveedor.findFirst({ where: { nombre: "ModaGlobal Inc" } });
+    let p2Id;
+    if (!prov2) {
+        const p = await prisma.proveedor.create({ data: { nombre: "ModaGlobal Inc", email: "ventas@modaglobal.com" } });
+        p2Id = p.id;
+    } else { p2Id = prov2.id; }
+
+
+    // 6. Crear Productos
+    console.log("Creando productos...");
+    const productos = [
+        {
+            codigo: "ELEC-001",
+            nombre: "Smartphone X",
+            precio: 599.99,
+            costo: 300.00,
+            stock: 50,
+            categoriaId: categoriasMap.get("Electrónica"),
+            proveedorId: p1Id
+        },
+        {
+            codigo: "ELEC-002",
+            nombre: "Laptop Pro",
+            precio: 1299.99,
+            costo: 800.00,
+            stock: 20,
+            categoriaId: categoriasMap.get("Electrónica"),
+            proveedorId: p1Id
+        },
+        {
+            codigo: "ROPA-001",
+            nombre: "Camiseta Básica",
+            precio: 19.99,
+            costo: 5.00,
+            stock: 200,
+            categoriaId: categoriasMap.get("Ropa"),
+            proveedorId: p2Id
+        },
+    ];
+
+    for (const prod of productos) {
+        if (prod.categoriaId && prod.proveedorId) {
+            await prisma.producto.upsert({
+                where: { codigo: prod.codigo },
+                update: {},
+                create: prod,
+            });
+        }
+    }
+
+    console.log("Datos de inventario cargados exitosamente.");
 }
 
 main()
